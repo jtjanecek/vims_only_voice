@@ -1,4 +1,4 @@
-from dragonfly import (Grammar, CompoundRule, Dictation, Text, Key, AppContext, MappingRule)
+from dragonfly import (Integer, IntegerRef, Grammar, CompoundRule, Dictation, Text, Key, AppContext, MappingRule)
 
 
 class VimEnabler(CompoundRule):
@@ -18,20 +18,41 @@ class VimDisabler(CompoundRule):
         vimTerminalBootstrap.enable()
         print "vim grammar disabled"
 
-
 class VimCommands(MappingRule):
 
     extras = [
-            Dictation('text')
+            Dictation('text'),
+            IntegerRef("n", 1, 1000),
+            IntegerRef("line", 1, 10000),
     ]
 
+    defaults = {
+        "n" : 1,
+        "z" : 1,
+     }
+
     mapping = {
+        # Basic modes
         "insert mode": Key("i"),
         "command mode": Key("escape"),
-        "up": Key("up"),
-        "down": Key("down"),
         "save file": Key("colon, w, enter"),
-        "exit": Key("colon, q")
+        "quit": Key("colon, q"),
+
+        # Navigation
+        "up [<n>]" : Key("k:%(n)d"),
+        "down [<n>]" : Key("j:%(n)d"),
+        "left [<n>]" : Key("h:%(n)d"),
+        "right [<n>]" : Key("l:%(n)d"),
+
+        "go [<line>]": Key("colon") + Text("%(line)s\n"),
+        
+        # Basic commands
+        "delete line" : Key("d,d"),
+        "undo": Key("u"),
+        "word [<n>]" : Key("w:%(n)d"),
+        "back [<n>]" : Key("b:%(n)d"),
+        "change word": Key("c,w"),
+
     }
 
 
@@ -49,4 +70,4 @@ terminalGrammer.disable()
 # Unload function which will be called by natlink at unload time.
 def unload():
     global terminalGrammer
-    if terminalGrammer: terminalGrammer.unload()
+    if terminalGrammer: terminalGrammer.unload(),
